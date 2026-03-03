@@ -15,7 +15,7 @@ function CheckCircle() {
   return (
     <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
-      className="text-emerald-500">
+      className="text-emerald-500 shrink-0">
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
       <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
@@ -47,18 +47,16 @@ const CARE_TIPS = {
   Reptiles: ["UVB lighting required", "Temperature gradient in tank", "Live or frozen prey diet", "Humidity & shedding care"],
 };
 
-export default function PetDetail({ pet, categoryName, categoryAccent, onBack }) {
-  const [liked, setLiked] = useState(pet.liked);
+export default function PetDetail({ pet, categoryName, categoryAccent, onBack, onAdopt }) {
+  const [liked, setLiked]         = useState(pet.liked);
   const [activeImg, setActiveImg] = useState(0);
   const tips = CARE_TIPS[categoryName] || CARE_TIPS["Dogs"];
 
-  // Lock body scroll
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  // Fake extra gallery images by reusing the main one with slight variation
   const gallery = [pet.images, pet.images, pet.images];
 
   return (
@@ -71,10 +69,9 @@ export default function PetDetail({ pet, categoryName, categoryAccent, onBack })
         .detail-panel { animation: slideInDetail 0.32s cubic-bezier(0.16,1,0.3,1) both; }
       `}</style>
 
-      {/* Full-screen panel — sits on top of CategoryPreview (z-60) */}
       <div className="detail-panel fixed inset-y-0 right-0 z-[60] w-full md:w-[680px] lg:w-[780px] bg-white shadow-2xl flex flex-col overflow-hidden">
 
-        {/* ── Top gradient header ── */}
+        {/* Gradient header */}
         <div className={`bg-gradient-to-br ${categoryAccent} px-6 pt-6 pb-5 shrink-0 relative`}>
           <button
             onClick={onBack}
@@ -84,61 +81,51 @@ export default function PetDetail({ pet, categoryName, categoryAccent, onBack })
           </button>
         </div>
 
-        {/* ── Scrollable body ── */}
+        {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto">
 
           {/* Hero image */}
           <div className="relative w-full h-72 bg-slate-100">
-            <img
-              src={gallery[activeImg]}
-              alt={pet.name}
-              className="w-full h-full object-cover"
-            />
-            {/* Like button */}
+            <img src={gallery[activeImg]} alt={pet.name} className="w-full h-full object-cover" />
             <button
               onClick={() => setLiked(!liked)}
               className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
             >
               <HeartIcon filled={liked} />
             </button>
-            {/* Badge */}
             {pet.badge && (
               <span className={`absolute top-4 left-4 ${pet.badgeColor || "bg-blue-500"} text-white text-[11px] font-bold rounded-full px-3 py-1`}>
                 {pet.badge}
               </span>
             )}
-            {/* Gallery dots */}
             <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
               {gallery.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
-                  className={`w-2 h-2 rounded-full transition-all ${activeImg === i ? "bg-white w-5" : "bg-white/50"}`}
+                  className={`h-2 rounded-full transition-all ${activeImg === i ? "bg-white w-5" : "bg-white/50 w-2"}`}
                 />
               ))}
             </div>
           </div>
 
-          {/* ── Main info ── */}
+          {/* Info */}
           <div className="px-6 py-6">
 
-            {/* Name + price row */}
             <div className="flex items-start justify-between mb-1">
-              <h1 className="text-2xl font-extrabold text-slate-900">{pet.name}</h1>
-              <div className="text-right">
+              <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{pet.name}</h1>
+              <div className="text-right ml-4 shrink-0">
                 <div className="text-2xl font-extrabold text-blue-600">${pet.price.toLocaleString()}</div>
                 <div className="text-[10px] text-slate-400">Adoption fee</div>
               </div>
             </div>
 
-            {/* Breed & rating row */}
             <p className="text-slate-500 text-sm mb-2">{pet.breed} · {categoryName}</p>
             <div className="flex items-center gap-1 mb-4">
               {[1,2,3,4,5].map(s => <StarIcon key={s} filled={s <= 4} />)}
               <span className="text-xs text-slate-400 ml-1">4.0 · 12 reviews</span>
             </div>
 
-            {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-6">
               {pet.tags.map((tag, ti) => (
                 <span key={`${tag}-${ti}`} className="text-xs font-semibold bg-blue-50 text-blue-600 rounded-full px-3 py-1">
@@ -147,27 +134,20 @@ export default function PetDetail({ pet, categoryName, categoryAccent, onBack })
               ))}
             </div>
 
-            {/* Quick stats grid */}
             <div className="grid grid-cols-3 gap-3 mb-6">
-              {[
-                ["🎂", "Age", pet.age],
-                ["⚧", "Sex", pet.sex],
-                ["🏷️", "Breed", pet.breed],
-              ].map(([icon, label, value]) => (
+              {[["🎂","Age",pet.age],["⚧","Sex",pet.sex],["🏷️","Breed",pet.breed]].map(([icon, label, val]) => (
                 <div key={label} className="bg-slate-50 rounded-2xl p-3 text-center">
                   <div className="text-xl mb-1">{icon}</div>
                   <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wide">{label}</div>
-                  <div className="text-sm font-bold text-slate-700 mt-0.5 truncate">{value}</div>
+                  <div className="text-sm font-bold text-slate-700 mt-0.5 truncate">{val}</div>
                 </div>
               ))}
             </div>
 
-            {/* Divider */}
             <div className="border-t border-slate-100 my-5" />
 
-            {/* Health checklist */}
             <h3 className="font-extrabold text-slate-800 text-base mb-3">Health &amp; Documentation</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-6">
               {HEALTH_ITEMS.map((item) => (
                 <div key={item} className="flex items-center gap-2 text-sm text-slate-600">
                   <CheckCircle /> {item}
@@ -175,47 +155,47 @@ export default function PetDetail({ pet, categoryName, categoryAccent, onBack })
               ))}
             </div>
 
-            {/* Divider */}
             <div className="border-t border-slate-100 my-5" />
 
-            {/* Care tips */}
             <h3 className="font-extrabold text-slate-800 text-base mb-3">Care Guide</h3>
             <div className="space-y-2 mb-6">
               {tips.map((tip, i) => (
                 <div key={i} className="flex items-start gap-3 bg-slate-50 rounded-xl px-4 py-3">
-                  <span className="text-blue-500 font-extrabold text-sm mt-0.5">{i + 1}</span>
+                  <span className="text-blue-500 font-extrabold text-sm mt-0.5 shrink-0">{i + 1}</span>
                   <span className="text-sm text-slate-600">{tip}</span>
                 </div>
               ))}
             </div>
 
-            {/* Divider */}
             <div className="border-t border-slate-100 my-5" />
 
-            {/* About section */}
             <h3 className="font-extrabold text-slate-800 text-base mb-2">About {pet.name}</h3>
             <p className="text-sm text-slate-500 leading-relaxed mb-8">
               {pet.name} is a beautiful {pet.age}-old {pet.breed} looking for a loving forever home.
-              {pet.sex === "Male" ? " He" : " She"} is{" "}
-              {pet.tags.join(", ").toLowerCase()} and has been raised in a caring environment.
-              {pet.sex === "Male" ? " He" : " She"} loves attention and will thrive with a family
-              that gives {pet.sex === "Male" ? "him" : "her"} the love and care {pet.sex === "Male" ? "he" : "she"} deserves.
+              {pet.sex === "Male" ? " He" : " She"} is {pet.tags.join(", ").toLowerCase()} and has been
+              raised in a caring environment.{" "}
+              {pet.sex === "Male" ? " He" : " She"} loves attention and will thrive with a family that gives{" "}
+              {pet.sex === "Male" ? "him" : "her"} the love and care {pet.sex === "Male" ? "he" : "she"} deserves.
             </p>
-
           </div>
         </div>
 
-        {/* ── Sticky bottom CTA ── */}
+        {/* Sticky bottom CTA */}
         <div className="shrink-0 border-t border-slate-100 bg-white px-6 py-4 flex gap-3">
           <button
             onClick={() => setLiked(!liked)}
-            className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-all ${
+            className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-all shrink-0 ${
               liked ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-slate-300"
             }`}
           >
             <HeartIcon filled={liked} />
           </button>
-          <button className="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold rounded-2xl py-3 transition-all shadow-lg shadow-blue-200">
+
+          {/* Adopt button — calls onAdopt(pet) → parent opens Checkout */}
+          <button
+            onClick={() => onAdopt && onAdopt(pet)}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold rounded-2xl py-3 transition-all shadow-lg shadow-blue-200 text-sm"
+          >
             Adopt {pet.name} · ${pet.price.toLocaleString()}
           </button>
         </div>

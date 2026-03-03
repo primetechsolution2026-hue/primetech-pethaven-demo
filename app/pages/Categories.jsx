@@ -1,3 +1,4 @@
+// C:\xampp\htdocs\PrimeTech Solutions\mypets\app\pages\Categories.jsx
 "use client";
 import { useState } from "react";
 import { CATEGORIES, TAB_FILTER } from "../components/Data";
@@ -18,7 +19,7 @@ export default function Categories() {
   return (
     <>
       <section className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6">
 
           {/* ── Header row ── */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -72,8 +73,7 @@ export default function Categories() {
                 style={{ animationDelay: `${i * 55}ms` }}
               >
                 <div className="w-14 h-14 rounded-full overflow-hidden bg-white shadow-sm flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
-
-                  <img src={ProfileImage} className="w-full h-full object-cover" alt="Dogs" />
+                  <img src={ProfileImage} className="w-full h-full object-cover" width={200} alt="Dogs" />
                 </div>
                 <span className="text-sm font-bold text-slate-800">{name}</span>
                 <span className="text-xs text-slate-400">{count} available</span>

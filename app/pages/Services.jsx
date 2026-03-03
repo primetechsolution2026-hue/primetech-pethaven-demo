@@ -4,7 +4,7 @@ import { ArrowRight } from "./../components/Icons";
 export default function Services() {
   return (
     <section className="py-20 bg-white">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-6">
 
         {/* Header */}
         <div className="text-center mb-12">

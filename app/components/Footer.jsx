@@ -4,7 +4,7 @@ import { MapPinIcon, PhoneIcon, MailIcon, FacebookIcon, InstagramIcon, TwitterIc
 export default function Footer() {
   return (
     <footer className="bg-white border-t border-slate-100 pt-14 pb-8">
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-10 mb-10">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-10 mb-10">
 
         {/* Brand column */}
         <div className="col-span-2 md:col-span-1">
@@ -72,7 +72,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="max-w-6xl mx-auto px-6 border-t border-slate-100 pt-6 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-slate-400">
+      <div className="max-w-7xl mx-auto px-6 border-t border-slate-100 pt-6 flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-slate-400">
         <span>© 2025 PetHaven. All rights reserved.</span>
         <span>Made with care for animals and their humans. 🐾</span>
       </div>

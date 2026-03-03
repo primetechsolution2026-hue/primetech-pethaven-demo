@@ -3,7 +3,7 @@ import { StarIcon, ArrowRight } from "./../components/Icons";
 export default function Hero() {
   return (
     <section className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-white pt-16 pb-20">
-      <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
 
         {/* Left — copy */}
         <div>
