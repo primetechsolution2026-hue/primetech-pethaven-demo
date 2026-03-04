@@ -2,11 +2,20 @@
 "use client";
 import { useState, useEffect } from "react";
 
+// ── Helper ────────────────────────────────────────────────────────────────────
+function optimizeImg(url, width = 200) {
+  if (!url) return url;
+  if (url.includes("pexels.com")) {
+    return `${url}?auto=compress&cs=tinysrgb&w=${width}&fit=crop`;
+  }
+  return url;
+}
+
 // Icons
-const BackIcon = () => <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>;
+const BackIcon  = () => <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>;
 const CloseIcon = () => <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>;
 const CheckIcon = () => <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
-const LockIcon = () => <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+const LockIcon  = () => <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
 
 // Step progress bar
 function StepBar({ step }) {
@@ -14,8 +23,8 @@ function StepBar({ step }) {
   return (
     <div className="flex items-center w-full">
       {steps.map((label, i) => {
-        const idx = i + 1;
-        const done = step > idx;
+        const idx  = i + 1;
+        const done   = step > idx;
         const active = step === idx;
         return (
           <div key={label} className="flex items-center flex-1 last:flex-none">
@@ -38,27 +47,32 @@ function Field({ label, type = "text", placeholder, value, onChange, error, half
   return (
     <div className={half ? "col-span-1" : "col-span-2"}>
       <label className="block text-xs font-semibold text-slate-600 mb-1.5">{label}</label>
-      <input type={type} placeholder={placeholder} value={value} onChange={onChange}
-        className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-all ${error ? "border-red-400 bg-red-50" : "border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"}`} />
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-all ${error ? "border-red-400 bg-red-50" : "border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"}`}
+      />
       {error && <p className="text-red-500 text-[11px] mt-1">{error}</p>}
     </div>
   );
 }
 
 export default function Checkout({ pet, onClose }) {
-  const [step, setStep] = useState(1);
+  const [step, setStep]         = useState(1);
   const [confirmed, setConfirmed] = useState(false);
-  const [info, setInfo] = useState({ firstName: "", lastName: "", email: "", phone: "" });
-  const [addr, setAddr] = useState({ street: "", city: "", state: "", zip: "", country: "" });
-  const [card, setCard] = useState({ number: "", name: "", expiry: "", cvv: "" });
-  const [errors, setErrors] = useState({});
+  const [info, setInfo]         = useState({ firstName: "", lastName: "", email: "", phone: "" });
+  const [addr, setAddr]         = useState({ street: "", city: "", state: "", zip: "", country: "" });
+  const [card, setCard]         = useState({ number: "", name: "", expiry: "", cvv: "" });
+  const [errors, setErrors]     = useState({});
   const [payMethod, setPayMethod] = useState("card");
   const [gcashNum, setGcashNum] = useState("");
 
   const adoptionFee = pet.price;
-  const vetFee = Math.round(pet.price * 0.08);
-  const processFee = 25;
-  const total = adoptionFee + vetFee + processFee;
+  const vetFee      = Math.round(pet.price * 0.08);
+  const processFee  = 25;
+  const total       = adoptionFee + vetFee + processFee;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -69,40 +83,40 @@ export default function Checkout({ pet, onClose }) {
     const e = {};
     if (step === 1) {
       if (!info.firstName.trim()) e.firstName = "Required";
-      if (!info.lastName.trim()) e.lastName = "Required";
-      if (!info.email.includes("@")) e.email = "Valid email required";
+      if (!info.lastName.trim())  e.lastName  = "Required";
+      if (!info.email.includes("@")) e.email  = "Valid email required";
       if (info.phone.replace(/\D/g, "").length < 7) e.phone = "Valid phone required";
     }
     if (step === 2) {
-      if (!addr.street.trim()) e.street = "Required";
-      if (!addr.city.trim()) e.city = "Required";
-      if (!addr.zip.trim()) e.zip = "Required";
+      if (!addr.street.trim())  e.street  = "Required";
+      if (!addr.city.trim())    e.city    = "Required";
+      if (!addr.zip.trim())     e.zip     = "Required";
       if (!addr.country.trim()) e.country = "Required";
     }
     if (step === 3 && payMethod === "card") {
       if (card.number.replace(/\s/g, "").length < 12) e.cardNumber = "Valid card required";
-      if (!card.name.trim()) e.cardName = "Required";
+      if (!card.name.trim())   e.cardName   = "Required";
       if (!card.expiry.trim()) e.cardExpiry = "Required";
-      if (card.cvv.length < 3) e.cardCvv = "Required";
+      if (card.cvv.length < 3) e.cardCvv   = "Required";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const next = () => { if (validate()) setStep(s => Math.min(s + 1, 4)); };
-  const back = () => { setErrors({}); setStep(s => Math.max(s - 1, 1)); };
+  const next   = () => { if (validate()) setStep(s => Math.min(s + 1, 4)); };
+  const back   = () => { setErrors({}); setStep(s => Math.max(s - 1, 1)); };
   const submit = () => { if (validate()) setConfirmed(true); };
 
-  const fmtCard = v => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+  const fmtCard   = v => v.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
   const fmtExpiry = v => { const d = v.replace(/\D/g, "").slice(0, 4); return d.length >= 3 ? `${d.slice(0, 2)}/${d.slice(2)}` : d; };
 
   // Confirmed screen
   if (confirmed) {
     return (
       <>
-        <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm" onClick={onClose} />
-        <div className="fixed inset-y-0 right-0 z-[80] w-full md:w-[520px] bg-white shadow-2xl flex flex-col items-center justify-center px-10 text-center animate-[coSlide_0.32s_ease_both]">
-          <style>{`@keyframes coSlide{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
+        {/* No backdrop-blur — use solid overlay for GPU savings */}
+        <div className="fixed inset-0 z-[70] bg-black/60" onClick={onClose} />
+        <div className="anim-co-slide fixed inset-y-0 right-0 z-[80] w-full md:w-[520px] bg-white shadow-2xl flex flex-col items-center justify-center px-10 text-center">
           <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mb-6 text-5xl">🐾</div>
           <h2 className="text-2xl font-extrabold text-slate-900 mb-2">Adoption Confirmed!</h2>
           <p className="text-slate-400 text-sm mb-6 leading-relaxed max-w-sm">
@@ -112,7 +126,15 @@ export default function Checkout({ pet, onClose }) {
           <div className="w-full bg-slate-50 rounded-2xl p-5 mb-6 text-left">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0">
-                <img src={pet.images} alt={pet.name} className="w-full h-full object-cover" />
+                <img
+                  src={optimizeImg(pet.images, 128)}
+                  alt={pet.name}
+                  loading="lazy"
+                  decoding="async"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div>
                 <div className="font-bold text-slate-800">{pet.name}</div>
@@ -136,9 +158,9 @@ export default function Checkout({ pet, onClose }) {
 
   return (
     <>
-      <style>{`@keyframes coSlide{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}`}</style>
-      <div className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed inset-y-0 right-0 z-[80] w-full md:w-[560px] bg-white shadow-2xl flex flex-col animate-[coSlide_0.32s_ease_both]">
+      {/* No backdrop-blur — use solid overlay */}
+      <div className="fixed inset-0 z-[70] bg-black/60" onClick={onClose} />
+      <div className="anim-co-slide fixed inset-y-0 right-0 z-[80] w-full md:w-[560px] bg-white shadow-2xl flex flex-col">
 
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between px-6 py-5 border-b border-slate-100">
@@ -167,7 +189,15 @@ export default function Checkout({ pet, onClose }) {
           {/* Pet summary strip */}
           <div className="flex items-center gap-4 bg-blue-50 rounded-2xl p-4 mb-6">
             <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0">
-              <img src={pet.images} alt={pet.name} className="w-full h-full object-cover" />
+              <img
+                src={optimizeImg(pet.images, 112)}
+                alt={pet.name}
+                loading="lazy"
+                decoding="async"
+                width={56}
+                height={56}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-bold text-slate-800 truncate">{pet.name}</div>
@@ -206,9 +236,9 @@ export default function Checkout({ pet, onClose }) {
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Street Address" placeholder="123 Main St"   value={addr.street}  onChange={e => setAddr({ ...addr, street: e.target.value })}  error={errors.street} />
-                <Field label="City"           placeholder="New York"      value={addr.city}    onChange={e => setAddr({ ...addr, city: e.target.value })}    error={errors.city}    half />
+                <Field label="City"           placeholder="New York"      value={addr.city}    onChange={e => setAddr({ ...addr, city: e.target.value })}    error={errors.city}   half />
                 <Field label="State / Region" placeholder="NY"            value={addr.state}   onChange={e => setAddr({ ...addr, state: e.target.value })}              half />
-                <Field label="ZIP / Postcode" placeholder="10001"         value={addr.zip}     onChange={e => setAddr({ ...addr, zip: e.target.value })}     error={errors.zip}     half />
+                <Field label="ZIP / Postcode" placeholder="10001"         value={addr.zip}     onChange={e => setAddr({ ...addr, zip: e.target.value })}     error={errors.zip}    half />
                 <Field label="Country"        placeholder="United States" value={addr.country} onChange={e => setAddr({ ...addr, country: e.target.value })} error={errors.country} half />
               </div>
               <div className="mt-5 bg-sky-50 border border-sky-100 rounded-2xl p-4">

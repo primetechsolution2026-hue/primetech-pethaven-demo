@@ -1,18 +1,32 @@
+// C:\xampp\htdocs\PrimeTech Solutions\mypets\app\pages\FeaturedPets.jsx
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { PETS, CATEGORIES } from "../components/Data";
 import { HeartIcon, ArrowRight, MapPinIcon } from "../components/Icons";
 import PetDetail from "../components/PetDetail";
 import Checkout from "../components/Checkout";
 
+// ── Helper ────────────────────────────────────────────────────────────────────
+function optimizeImg(url, width = 400) {
+  if (!url) return url;
+  if (url.includes("pexels.com")) {
+    return `${url}?auto=compress&cs=tinysrgb&w=${width}&fit=crop`;
+  }
+  return url;
+}
+
 const FEATURED = PETS.slice(0, 4);
 
+// Build a lookup map once at module level — O(1) per pet instead of O(n²)
+const petCategoryMap = new Map();
+CATEGORIES.forEach((cat) => {
+  cat.pets.forEach((p) => {
+    petCategoryMap.set(`${p.name}__${p.breed}`, cat);
+  });
+});
+
 function getCategoryForPet(pet) {
-  return (
-    CATEGORIES.find((c) =>
-      c.pets.some((p) => p.name === pet.name && p.breed === pet.breed)
-    ) || CATEGORIES[0]
-  );
+  return petCategoryMap.get(`${pet.name}__${pet.breed}`) ?? CATEGORIES[0];
 }
 
 export default function FeaturedPets() {
@@ -23,7 +37,11 @@ export default function FeaturedPets() {
   const toggleLike = (i) =>
     setLiked((prev) => prev.map((v, j) => (j === i ? !v : v)));
 
-  const detailCat = detailPet ? getCategoryForPet(detailPet) : null;
+  // useMemo so we don't recompute on every keystroke / state change
+  const detailCat = useMemo(
+    () => (detailPet ? getCategoryForPet(detailPet) : null),
+    [detailPet]
+  );
 
   return (
     <>
@@ -55,9 +73,13 @@ export default function FeaturedPets() {
                 {/* Photo */}
                 <div className="relative h-48 bg-slate-100 overflow-hidden">
                   <img
-                    src={pet.images}
+                    src={optimizeImg(pet.images, 400)}
                     alt={pet.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                    decoding="async"
+                    width={400}
+                    height={192}
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {pet.badge && (
                     <span className={`absolute top-3 left-3 ${pet.badgeColor || "bg-emerald-500"} text-white text-[10px] font-bold rounded-full px-2.5 py-1`}>
@@ -99,15 +121,12 @@ export default function FeaturedPets() {
                   </div>
 
                   <div className="flex gap-2">
-                    {/* ── View Details → opens PetDetail ── */}
                     <button
                       onClick={() => setDetailPet(pet)}
                       className="flex-1 text-xs font-bold text-blue-600 border border-blue-200 rounded-full py-2 hover:bg-blue-50 transition-colors flex items-center justify-center gap-1"
                     >
                       View details <ArrowRight />
                     </button>
-
-                    {/* ── Adopt → opens Checkout directly ── */}
                     <button
                       onClick={() => setCheckoutPet(pet)}
                       className="text-xs font-bold bg-blue-600 text-white rounded-full py-2 px-3 hover:bg-blue-700 active:scale-95 transition-all whitespace-nowrap"
@@ -129,11 +148,12 @@ export default function FeaturedPets() {
         </div>
       </section>
 
-      {/* ── PetDetail slide-in overlay ── */}
+      {/* PetDetail slide-in overlay */}
       {detailPet && detailCat && (
         <>
+          {/* No backdrop-blur — solid overlay */}
           <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/50"
             onClick={() => setDetailPet(null)}
           />
           <PetDetail
@@ -146,7 +166,7 @@ export default function FeaturedPets() {
         </>
       )}
 
-      {/* ── Checkout slide-in overlay ── */}
+      {/* Checkout slide-in overlay */}
       {checkoutPet && (
         <Checkout
           pet={checkoutPet}

@@ -1,8 +1,19 @@
+// C:\xampp\htdocs\PrimeTech Solutions\mypets\app\components\CategoryPreview.jsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { HeartIcon } from "./Icons";
 import PetDetail from "./PetDetail";
 import Checkout from "./Checkout";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+/** Append Pexels compression params so we never download a 4 K image */
+function optimizeImg(url, width = 400) {
+  if (!url) return url;
+  if (url.includes("pexels.com")) {
+    return `${url}?auto=compress&cs=tinysrgb&w=${width}&fit=crop`;
+  }
+  return url;
+}
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 function BackIcon() {
@@ -30,8 +41,8 @@ function ArrowRight() {
   );
 }
 
-// ── Pet Card inside the preview panel ────────────────────────────────────────
-function PetCard({ pet, onViewDetails, onAdopt }) {
+// ── Pet Card — memoised so it never re-renders when siblings change ────────────
+const PetCard = memo(function PetCard({ pet, onViewDetails, onAdopt }) {
   const [liked, setLiked] = useState(pet.liked);
 
   return (
@@ -40,9 +51,13 @@ function PetCard({ pet, onViewDetails, onAdopt }) {
       {/* Image */}
       <div className="relative h-44 bg-slate-100 overflow-hidden">
         <img
-          src={pet.images}
+          src={optimizeImg(pet.images, 400)}
           alt={pet.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+          decoding="async"
+          width={400}
+          height={176}
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
         {/* Badge */}
         {pet.badge && (
@@ -54,6 +69,7 @@ function PetCard({ pet, onViewDetails, onAdopt }) {
         <button
           onClick={(e) => { e.stopPropagation(); setLiked(!liked); }}
           className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform"
+          aria-label={liked ? "Unlike" : "Like"}
         >
           <HeartIcon filled={liked} />
         </button>
@@ -80,7 +96,6 @@ function PetCard({ pet, onViewDetails, onAdopt }) {
         </div>
 
         <div className="flex gap-2">
-          {/* ← This is the wired-up button */}
           <button
             onClick={() => onViewDetails(pet)}
             className="flex-1 text-xs font-bold text-blue-600 border border-blue-200 rounded-full py-2 hover:bg-blue-50 transition-colors flex items-center justify-center gap-1"
@@ -97,7 +112,7 @@ function PetCard({ pet, onViewDetails, onAdopt }) {
       </div>
     </div>
   );
-}
+});
 
 // ── Main CategoryPreview ──────────────────────────────────────────────────────
 export default function CategoryPreview({ category, onClose }) {
@@ -114,27 +129,14 @@ export default function CategoryPreview({ category, onClose }) {
 
   return (
     <>
-      <style>{`
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to   { transform: translateX(0);    opacity: 1; }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .slide-panel { animation: slideIn 0.3s cubic-bezier(0.16,1,0.3,1) both; }
-        .fade-up     { animation: fadeUp  0.4s ease both; }
-      `}</style>
-
-      {/* Backdrop */}
+      {/* Backdrop — no backdrop-blur to avoid GPU cost */}
       <div
-        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-40 bg-black/50"
         onClick={onClose}
       />
 
-      {/* Slide-in panel */}
-      <div className="slide-panel fixed inset-y-0 right-0 z-50 w-full md:w-[680px] lg:w-[780px] bg-white shadow-2xl flex flex-col">
+      {/* Slide-in panel — animation defined in globals.css */}
+      <div className="anim-slide-in fixed inset-y-0 right-0 z-50 w-full md:w-[680px] lg:w-[780px] bg-white shadow-2xl flex flex-col">
 
         {/* ── Header banner ── */}
         <div className={`bg-gradient-to-br ${category.accent} px-8 pt-8 pb-10 relative shrink-0`}>
@@ -153,11 +155,14 @@ export default function CategoryPreview({ category, onClose }) {
           </button>
 
           <div className="flex items-center gap-5">
-            {/* Category profile image */}
             <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg ring-4 ring-white/30 shrink-0">
               <img
-                src={category.ProfileImage}
+                src={optimizeImg(category.ProfileImage, 160)}
                 alt={category.name}
+                loading="eager"
+                decoding="async"
+                width={80}
+                height={80}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -197,7 +202,7 @@ export default function CategoryPreview({ category, onClose }) {
             {category.pets.map((pet, i) => (
               <div
                 key={`${pet.breed}-${pet.name}-${i}`}
-                className="fade-up"
+                className="anim-fade-up"
                 style={{ animationDelay: `${i * 80}ms` }}
               >
                 <PetCard
@@ -218,7 +223,7 @@ export default function CategoryPreview({ category, onClose }) {
         </div>
       </div>
 
-      {/* ── PetDetail slides in on top when a pet is selected ── */}
+      {/* PetDetail slides in on top */}
       {selectedPet && (
         <PetDetail
           pet={selectedPet}

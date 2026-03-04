@@ -4,17 +4,23 @@ import { useState } from "react";
 import { CATEGORIES, TAB_FILTER } from "../components/Data";
 import CategoryPreview from "./../components/CategoryPreview";
 
-const TABS = Object.keys(TAB_FILTER); // ["All pets", "Puppies", "Kittens", "Small pets"]
+// ── Helper ────────────────────────────────────────────────────────────────────
+function optimizeImg(url, width = 200) {
+  if (!url) return url;
+  if (url.includes("pexels.com")) {
+    return `${url}?auto=compress&cs=tinysrgb&w=${width}&fit=crop`;
+  }
+  return url;
+}
+
+const TABS = Object.keys(TAB_FILTER);
 
 export default function Categories() {
   const [active, setActive] = useState("All pets");
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // Filter which categories to show based on active tab
   const visibleNames = TAB_FILTER[active];
-  const visibleCategories = CATEGORIES.filter((c) =>
-    visibleNames.includes(c.name)
-  );
+  const visibleCategories = CATEGORIES.filter((c) => visibleNames.includes(c.name));
 
   return (
     <>
@@ -55,15 +61,13 @@ export default function Categories() {
 
           {/* ── Category grid ── */}
           <div
-            key={active}                          // re-mounts on tab change → triggers animation
+            key={active}
             className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4"
           >
             {visibleCategories.map(({ name, count, ProfileImage, bg }, i) => (
               <button
                 key={name}
-                onClick={() => setSelectedCategory(
-                  CATEGORIES.find((c) => c.name === name)
-                )}
+                onClick={() => setSelectedCategory(CATEGORIES.find((c) => c.name === name))}
                 className={`
                   ${bg} rounded-2xl p-4 flex flex-col items-center gap-2
                   hover:scale-105 hover:shadow-md active:scale-95
@@ -73,12 +77,18 @@ export default function Categories() {
                 style={{ animationDelay: `${i * 55}ms` }}
               >
                 <div className="w-14 h-14 rounded-full overflow-hidden bg-white shadow-sm flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
-                  <img src={ProfileImage} className="w-full h-full object-cover" width={200} alt="Dogs" />
+                  <img
+                    src={optimizeImg(ProfileImage, 112)}
+                    alt={name}
+                    loading="lazy"
+                    decoding="async"
+                    width={56}
+                    height={56}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <span className="text-sm font-bold text-slate-800">{name}</span>
                 <span className="text-xs text-slate-400">{count} available</span>
-
-                {/* Subtle "tap to explore" hint */}
                 <span className="text-[9px] text-blue-400 font-semibold opacity-0 group-hover:opacity-100 transition-opacity -mt-1">
                   Explore →
                 </span>
@@ -89,7 +99,7 @@ export default function Categories() {
         </div>
       </section>
 
-      {/* ── Keyframe for card entrance ── */}
+      {/* Keyframe lives in globals.css — kept here only as fallback */}
       <style>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(14px); }
@@ -97,7 +107,7 @@ export default function Categories() {
         }
       `}</style>
 
-      {/* ── Preview panel (portal-like overlay) ── */}
+      {/* Preview panel */}
       {selectedCategory && (
         <CategoryPreview
           category={selectedCategory}

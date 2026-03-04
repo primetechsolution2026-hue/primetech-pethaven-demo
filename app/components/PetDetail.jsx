@@ -1,6 +1,16 @@
+// C:\xampp\htdocs\PrimeTech Solutions\mypets\app\components\PetDetail.jsx
 "use client";
 import { useState, useEffect } from "react";
 import { HeartIcon } from "./Icons";
+
+// ── Helper ────────────────────────────────────────────────────────────────────
+function optimizeImg(url, width = 400) {
+  if (!url) return url;
+  if (url.includes("pexels.com")) {
+    return `${url}?auto=compress&cs=tinysrgb&w=${width}&fit=crop`;
+  }
+  return url;
+}
 
 function BackIcon() {
   return (
@@ -57,19 +67,18 @@ export default function PetDetail({ pet, categoryName, categoryAccent, onBack, o
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  const gallery = [pet.images, pet.images, pet.images];
+  // Single real image shown three times — at different sizes for the dots UX
+  // In production, swap these for actual alternate image URLs from pet data
+  const gallery = [
+    optimizeImg(pet.images, 780),
+    optimizeImg(pet.images, 780),
+    optimizeImg(pet.images, 780),
+  ];
 
   return (
     <>
-      <style>{`
-        @keyframes slideInDetail {
-          from { transform: translateX(100%); opacity: 0; }
-          to   { transform: translateX(0);    opacity: 1; }
-        }
-        .detail-panel { animation: slideInDetail 0.32s cubic-bezier(0.16,1,0.3,1) both; }
-      `}</style>
-
-      <div className="detail-panel fixed inset-y-0 right-0 z-[60] w-full md:w-[680px] lg:w-[780px] bg-white shadow-2xl flex flex-col overflow-hidden">
+      {/* Animation defined in globals.css as .anim-slide-in-detail */}
+      <div className="anim-slide-in-detail fixed inset-y-0 right-0 z-[60] w-full md:w-[680px] lg:w-[780px] bg-white shadow-2xl flex flex-col overflow-hidden">
 
         {/* Gradient header */}
         <div className={`bg-gradient-to-br ${categoryAccent} px-6 pt-6 pb-5 shrink-0 relative`}>
@@ -86,10 +95,19 @@ export default function PetDetail({ pet, categoryName, categoryAccent, onBack, o
 
           {/* Hero image */}
           <div className="relative w-full h-72 bg-slate-100">
-            <img src={gallery[activeImg]} alt={pet.name} className="w-full h-full object-cover" />
+            <img
+              src={gallery[activeImg]}
+              alt={pet.name}
+              loading="lazy"
+              decoding="async"
+              width={780}
+              height={288}
+              className="w-full h-full object-cover"
+            />
             <button
               onClick={() => setLiked(!liked)}
               className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+              aria-label={liked ? "Unlike" : "Like"}
             >
               <HeartIcon filled={liked} />
             </button>
@@ -98,11 +116,13 @@ export default function PetDetail({ pet, categoryName, categoryAccent, onBack, o
                 {pet.badge}
               </span>
             )}
+            {/* Dot navigation */}
             <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
               {gallery.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
+                  aria-label={`Image ${i + 1}`}
                   className={`h-2 rounded-full transition-all ${activeImg === i ? "bg-white w-5" : "bg-white/50 w-2"}`}
                 />
               ))}
@@ -187,11 +207,11 @@ export default function PetDetail({ pet, categoryName, categoryAccent, onBack, o
             className={`w-12 h-12 rounded-2xl border-2 flex items-center justify-center transition-all shrink-0 ${
               liked ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:border-slate-300"
             }`}
+            aria-label={liked ? "Unlike" : "Like"}
           >
             <HeartIcon filled={liked} />
           </button>
 
-          {/* Adopt button — calls onAdopt(pet) → parent opens Checkout */}
           <button
             onClick={() => onAdopt && onAdopt(pet)}
             className="flex-1 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-bold rounded-2xl py-3 transition-all shadow-lg shadow-blue-200 text-sm"
